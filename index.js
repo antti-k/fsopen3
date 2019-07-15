@@ -12,18 +12,6 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 app.use(cors())
 app.use(express.static('build'))
 
-const errorHandler = (error, request, response, next) => {
-	console.error(error.message)
-
-	if (error.name === 'CastError' && error.kind == 'ObjectId') {
-		return response.status(400).send({ error: 'malformatted id' })
-	}
-	
-	next(error)
-}
-
-app.use(errorHandler)
-
 app.get('/api/persons', (req, res) => {
 	Person.find({})
 		.then(persons => {
@@ -34,7 +22,10 @@ app.get('/api/persons', (req, res) => {
 app.get('/info', (req, res) => {
 	const currentDate = new Date().toDateString()
 	const currentTime = new Date().toTimeString()
-	res.send(`Phonebook has info for ${persons.length} people</br>${currentDate}${currentTime}`)
+	Person.countDocuments({}).then(count => {
+		res.send(`Phonebook has info for ${count} people</br>${currentDate}${currentTime}`)
+	})
+		.catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (req, res, next) => {
@@ -73,7 +64,7 @@ app.put('/api/persons/:id', (req, res, next) => {
 		.catch(error => next(error))
 })
 
-app.post('/api/persons/', (req, res) => {
+app.post('/api/persons/', (req, res, next) => {
 	const body = req.body
 
 	if (!body.name || !body.number) {
@@ -100,8 +91,22 @@ app.post('/api/persons/', (req, res) => {
 			person.save().then(savedPerson => {
 				res.json(savedPerson.toJSON())
 			})
+				.catch(error => next(error))
 		})
 })
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
+  }
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

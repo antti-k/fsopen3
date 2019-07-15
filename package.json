@@ -7,7 +7,7 @@
     "start": "node index.js",
     "watch": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:ui": "rm -rf build && cd ../fsopen/osa2/puhelinluettelo/ && npm run build --prod && cp -r build .cp -r ../../../fsopen3/"
+    "build:ui": "rm -rf build && cd ../fsopen/osa2/puhelinluettelo/ && npm run build --prod && cp -r build ../../../fsopen3/"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "dotenv": "^8.0.0",
     "express": "^4.17.1",
     "mongoose": "^5.6.4",
+    "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.9.1"
   },
   "devDependencies": {
